@@ -10,7 +10,19 @@ import (
 
 func main() {
 	cfg := config.LoadConfig()
-	db(cfg)
+
+	if err := database.Connect(cfg); err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+	defer func() {
+		if err := database.Close(); err != nil {
+			log.Printf("Failed to close database connection: %v", err)
+		}
+	}()
+
+	if err := database.Migrate(); err != nil {
+		log.Fatal("Failed to run database migrations:", err)
+	}
 
 	r := gin.Default()
 
@@ -22,21 +34,5 @@ func main() {
 
 	if err := r.Run(); err != nil {
 		log.Fatal("Failed to start gin:", err)
-	}
-}
-
-func db(cfg *config.Config) {
-	if err := database.Connect(cfg); err != nil {
-		log.Fatal("Failed to connect to database:", err)
-	}
-	defer func() {
-		err := database.Close()
-		if err != nil {
-			log.Fatal("Failed to close database connection:", err)
-		}
-	}()
-
-	if err := database.Migrate(); err != nil {
-		log.Fatal("Failed to run database migrations:", err)
 	}
 }
