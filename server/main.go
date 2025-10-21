@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/wimwenigerkind/backup-manager/server/internal/config"
 	"github.com/wimwenigerkind/backup-manager/server/internal/database"
+	"github.com/wimwenigerkind/backup-manager/server/internal/handlers"
 )
 
 func main() {
@@ -31,6 +32,15 @@ func main() {
 			"status": "ok",
 		})
 	})
+
+	agentHandler := handlers.NewAgentHandler()
+	api := r.Group("/api/v1")
+	{
+		agents := api.Group("/agents")
+		{
+			agents.POST("", agentHandler.CreateAgent)
+		}
+	}
 
 	if err := r.Run(); err != nil {
 		log.Fatal("Failed to start gin:", err)
