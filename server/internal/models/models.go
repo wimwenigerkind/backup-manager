@@ -29,10 +29,11 @@ type Agent struct {
 
 type BackupJob struct {
 	BaseModel
-	AgentID  uuid.UUID `gorm:"type:char(36);not null;index" json:"agent_id"`
-	Agent    *Agent    `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
-	Interval int       `gorm:"not null" json:"interval"`
-	Source   string    `gorm:"type:varchar(255);not null" json:"source"`
+	AgentID       uuid.UUID      `gorm:"type:char(36);not null;index" json:"agent_id"`
+	Agent         *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
+	Interval      int            `gorm:"not null" json:"interval"`
+	Source        string         `gorm:"type:varchar(255);not null" json:"source"`
+	BackupTargets []BackupTarget `gorm:"foreignKey:BackupJobID" json:"backup_targets,omitempty"`
 }
 
 type BackupTarget struct {

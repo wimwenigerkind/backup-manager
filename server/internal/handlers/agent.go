@@ -46,7 +46,10 @@ func (h *AgentHandler) CreateAgent(c *gin.Context) {
 
 func (h *AgentHandler) GetAgents(c *gin.Context) {
 	var agents []models.Agent
-	if err := database.DB.Find(&agents).Error; err != nil {
+	if err := database.DB.
+		Preload("BackupJobs").
+		Preload("BackupJobs.BackupTargets").
+		Find(&agents).Error; err != nil {
 		log.Printf("Error fetching agents: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch agents", "details": err.Error()})
 		return
@@ -54,10 +57,30 @@ func (h *AgentHandler) GetAgents(c *gin.Context) {
 
 	response := make([]dto.AgentResponse, 0, len(agents))
 	for _, agent := range agents {
+		backupJobs := make([]dto.BackupJobResponse, 0, len(agent.BackupJobs))
+		for _, job := range agent.BackupJobs {
+			backupTargets := make([]dto.BackupTargetResponse, 0, len(job.BackupTargets))
+			for _, target := range job.BackupTargets {
+				backupTargets = append(backupTargets, dto.BackupTargetResponse{
+					ID:         target.ID.String(),
+					TargetType: target.TargetType,
+					Path:       target.Path,
+				})
+			}
+
+			backupJobs = append(backupJobs, dto.BackupJobResponse{
+				ID:            job.ID.String(),
+				Interval:      job.Interval,
+				Source:        job.Source,
+				BackupTargets: backupTargets,
+			})
+		}
+
 		response = append(response, dto.AgentResponse{
-			ID:   agent.ID.String(),
-			Name: agent.Name,
-			IP:   agent.IP,
+			ID:         agent.ID.String(),
+			Name:       agent.Name,
+			IP:         agent.IP,
+			BackupJobs: backupJobs,
 		})
 	}
 
