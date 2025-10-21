@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/wimwenigerkind/backup-manager/server/internal/config"
 	"github.com/wimwenigerkind/backup-manager/server/internal/database"
 )
@@ -10,6 +11,18 @@ import (
 func main() {
 	cfg := config.LoadConfig()
 	db(cfg)
+
+	r := gin.Default()
+
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "ok",
+		})
+	})
+
+	if err := r.Run(); err != nil {
+		log.Fatal("Failed to start gin:", err)
+	}
 }
 
 func db(cfg *config.Config) {
