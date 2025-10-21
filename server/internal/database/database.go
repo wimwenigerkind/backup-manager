@@ -62,6 +62,8 @@ func Migrate() error {
 
 	err := DB.AutoMigrate(
 		&models.Agent{},
+		&models.BackupJob{},
+		&models.BackupTarget{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to run migrations: %w", err)
