@@ -43,3 +43,23 @@ func (h *AgentHandler) CreateAgent(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, response)
 }
+
+func (h *AgentHandler) GetAgents(c *gin.Context) {
+	var agents []models.Agent
+	if err := database.DB.Find(&agents).Error; err != nil {
+		log.Printf("Error fetching agents: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch agents", "details": err.Error()})
+		return
+	}
+
+	response := make([]dto.AgentResponse, 0, len(agents))
+	for _, agent := range agents {
+		response = append(response, dto.AgentResponse{
+			ID:   agent.ID.String(),
+			Name: agent.Name,
+			IP:   agent.IP,
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
+}

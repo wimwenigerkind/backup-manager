@@ -39,6 +39,7 @@ func main() {
 		agents := api.Group("/agents")
 		{
 			agents.POST("", agentHandler.CreateAgent)
+			agents.GET("", agentHandler.GetAgents)
 		}
 	}
 
