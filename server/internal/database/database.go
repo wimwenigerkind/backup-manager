@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/wimwenigerkind/backup-manager/server/internal/config"
+	"github.com/wimwenigerkind/backup-manager/server/internal/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -59,7 +60,9 @@ func Migrate() error {
 
 	log.Println("Running database migrations...")
 
-	err := DB.AutoMigrate()
+	err := DB.AutoMigrate(
+		&models.Agent{},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}

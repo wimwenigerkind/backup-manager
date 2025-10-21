@@ -3,6 +3,7 @@ module github.com/wimwenigerkind/backup-manager/server
 go 1.24.5
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.0
