@@ -40,6 +40,13 @@ func main() {
 		{
 			agents.POST("", agentHandler.CreateAgent)
 			agents.GET("", agentHandler.GetAgents)
+			agents.POST("/:id/backup-jobs", agentHandler.CreateBackupJob)
+		}
+
+		backupJobs := api.Group("/backup-jobs")
+		{
+			backupJobs.POST("/:id/targets", agentHandler.CreateBackupTarget)
+			backupJobs.DELETE("/:id", agentHandler.DeleteBackupJob)
 		}
 	}
 

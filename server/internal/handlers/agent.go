@@ -86,3 +86,59 @@ func (h *AgentHandler) GetAgents(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *AgentHandler) CreateBackupJob(c *gin.Context) {
+	agentID := c.Param("id")
+
+	var agent models.Agent
+	if err := database.DB.First(&agent, "id = ?", agentID).Error; err != nil {
+		log.Printf("Agent not found: %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+
+	var req dto.CreateBackupJobRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	backupJob := models.BackupJob{
+		AgentID:  agent.ID,
+		Interval: req.Interval,
+		Source:   req.Source,
+	}
+
+	if err := database.DB.Create(&backupJob).Error; err != nil {
+		log.Printf("Error creating backup job: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create backup job", "details": err.Error()})
+		return
+	}
+
+	response := dto.BackupJobResponse{
+		ID:       backupJob.ID.String(),
+		Interval: backupJob.Interval,
+		Source:   backupJob.Source,
+	}
+
+	c.JSON(http.StatusCreated, response)
+}
+
+func (h *AgentHandler) DeleteBackupJob(c *gin.Context) {
+	jobID := c.Param("id")
+
+	var job models.BackupJob
+	if err := database.DB.First(&job, "id = ?", jobID).Error; err != nil {
+		log.Printf("Backup job not found: %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Backup job not found"})
+		return
+	}
+
+	if err := database.DB.Delete(&job).Error; err != nil {
+		log.Printf("Error deleting backup job: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete backup job", "details": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

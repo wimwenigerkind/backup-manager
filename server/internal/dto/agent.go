@@ -24,3 +24,8 @@ type AgentResponse struct {
 	IP         string              `json:"ip"`
 	BackupJobs []BackupJobResponse `json:"backup_jobs,omitempty"`
 }
+
+type CreateBackupJobRequest struct {
+	Interval int    `json:"interval" binding:"required,min=1"`
+	Source   string `json:"source" binding:"required"`
+}
