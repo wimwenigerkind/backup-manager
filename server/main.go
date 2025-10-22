@@ -40,6 +40,7 @@ func main() {
 		{
 			agents.POST("", agentHandler.CreateAgent)
 			agents.GET("", agentHandler.GetAgents)
+			agents.GET("/:id/config", agentHandler.GetAgentConfig)
 			agents.POST("/:id/backup-jobs", agentHandler.CreateBackupJob)
 		}
 

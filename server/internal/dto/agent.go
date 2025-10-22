@@ -15,7 +15,7 @@ type BackupJobResponse struct {
 	ID            string                 `json:"id"`
 	Interval      int                    `json:"interval"`
 	Source        string                 `json:"source"`
-	BackupTargets []BackupTargetResponse `json:"backup_targets,omitempty"`
+	BackupTargets []BackupTargetResponse `json:"backup_targets"`
 }
 
 type AgentResponse struct {
@@ -33,4 +33,16 @@ type CreateBackupJobRequest struct {
 type CreateBackupTargetRequest struct {
 	TargetType string `json:"target_type" binding:"required"`
 	Path       string `json:"path" binding:"required"`
+}
+
+type AgentConfigResponse struct {
+	ConfigVersion string              `json:"config_version"`
+	Agent         AgentInfo           `json:"agent"`
+	BackupJobs    []BackupJobResponse `json:"backup_jobs"`
+}
+
+type AgentInfo struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	IP   string `json:"ip"`
 }

@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wimwenigerkind/backup-manager/server/internal/database"
@@ -197,4 +200,77 @@ func (h *AgentHandler) DeleteBackupTarget(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (h *AgentHandler) GetAgentConfig(c *gin.Context) {
+	agentID := c.Param("id")
+
+	var agent models.Agent
+	if err := database.DB.
+		Preload("BackupJobs").
+		Preload("BackupJobs.BackupTargets").
+		First(&agent, "id = ?", agentID).Error; err != nil {
+		log.Printf("Agent not found: %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+
+	// Build backup jobs response
+	backupJobs := make([]dto.BackupJobResponse, 0, len(agent.BackupJobs))
+	for _, job := range agent.BackupJobs {
+		backupTargets := make([]dto.BackupTargetResponse, 0, len(job.BackupTargets))
+		for _, target := range job.BackupTargets {
+			backupTargets = append(backupTargets, dto.BackupTargetResponse{
+				ID:         target.ID.String(),
+				TargetType: target.TargetType,
+				Path:       target.Path,
+			})
+		}
+
+		backupJobs = append(backupJobs, dto.BackupJobResponse{
+			ID:            job.ID.String(),
+			Interval:      job.Interval,
+			Source:        job.Source,
+			BackupTargets: backupTargets,
+		})
+	}
+
+	// Generate config version hash based on agent data
+	configVersion := generateConfigHash(agent)
+
+	response := dto.AgentConfigResponse{
+		ConfigVersion: configVersion,
+		Agent: dto.AgentInfo{
+			ID:   agent.ID.String(),
+			Name: agent.Name,
+			IP:   agent.IP,
+		},
+		BackupJobs: backupJobs,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+func generateConfigHash(agent models.Agent) string {
+	// Create a hash based on agent data and all jobs/targets timestamps
+	var builder strings.Builder
+
+	// Include agent data
+	builder.WriteString(agent.ID.String())
+	builder.WriteString(agent.UpdatedAt.Format("20060102150405"))
+
+	// Include all backup jobs and their targets
+	for _, job := range agent.BackupJobs {
+		builder.WriteString(job.ID.String())
+		builder.WriteString(job.UpdatedAt.Format("20060102150405"))
+
+		for _, target := range job.BackupTargets {
+			builder.WriteString(target.ID.String())
+			builder.WriteString(target.UpdatedAt.Format("20060102150405"))
+		}
+	}
+
+	// Generate SHA-256 hash
+	hash := sha256.Sum256([]byte(builder.String()))
+	return hex.EncodeToString(hash[:])
 }
