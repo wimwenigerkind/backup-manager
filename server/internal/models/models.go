@@ -33,7 +33,7 @@ type BackupJob struct {
 	Agent         *Agent         `gorm:"foreignKey:AgentID" json:"agent,omitempty"`
 	Interval      int            `gorm:"not null" json:"interval"`
 	Source        string         `gorm:"type:varchar(255);not null" json:"source"`
-	BackupTargets []BackupTarget `gorm:"foreignKey:BackupJobID" json:"backup_targets,omitempty"`
+	BackupTargets []BackupTarget `gorm:"foreignKey:BackupJobID;constraint:OnDelete:CASCADE" json:"backup_targets,omitempty"`
 }
 
 type BackupTarget struct {
