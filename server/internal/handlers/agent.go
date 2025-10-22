@@ -142,3 +142,59 @@ func (h *AgentHandler) DeleteBackupJob(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func (h *AgentHandler) CreateBackupTarget(c *gin.Context) {
+	jobID := c.Param("id")
+
+	var job models.BackupJob
+	if err := database.DB.First(&job, "id = ?", jobID).Error; err != nil {
+		log.Printf("Backup job not found: %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Backup job not found"})
+		return
+	}
+
+	var req dto.CreateBackupTargetRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	target := models.BackupTarget{
+		BackupJobID: job.ID,
+		TargetType:  req.TargetType,
+		Path:        req.Path,
+	}
+
+	if err := database.DB.Create(&target).Error; err != nil {
+		log.Printf("Error creating backup target: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create backup target", "details": err.Error()})
+		return
+	}
+
+	response := dto.BackupTargetResponse{
+		ID:         target.ID.String(),
+		TargetType: target.TargetType,
+		Path:       target.Path,
+	}
+
+	c.JSON(http.StatusCreated, response)
+}
+
+func (h *AgentHandler) DeleteBackupTarget(c *gin.Context) {
+	targetID := c.Param("id")
+
+	var target models.BackupTarget
+	if err := database.DB.First(&target, "id = ?", targetID).Error; err != nil {
+		log.Printf("Backup target not found: %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Backup target not found"})
+		return
+	}
+
+	if err := database.DB.Delete(&target).Error; err != nil {
+		log.Printf("Error deleting backup target: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete backup target", "details": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

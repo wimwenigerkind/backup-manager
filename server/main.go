@@ -48,6 +48,11 @@ func main() {
 			backupJobs.POST("/:id/targets", agentHandler.CreateBackupTarget)
 			backupJobs.DELETE("/:id", agentHandler.DeleteBackupJob)
 		}
+
+		backupTargets := api.Group("/backup-targets")
+		{
+			backupTargets.DELETE("/:id", agentHandler.DeleteBackupTarget)
+		}
 	}
 
 	if err := r.Run(); err != nil {

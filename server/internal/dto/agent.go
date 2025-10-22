@@ -29,3 +29,8 @@ type CreateBackupJobRequest struct {
 	Interval int    `json:"interval" binding:"required,min=1"`
 	Source   string `json:"source" binding:"required"`
 }
+
+type CreateBackupTargetRequest struct {
+	TargetType string `json:"target_type" binding:"required"`
+	Path       string `json:"path" binding:"required"`
+}
