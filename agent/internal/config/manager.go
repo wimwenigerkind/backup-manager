@@ -13,3 +13,9 @@ type Manager struct {
 	configHash    string
 	mu            sync.RWMutex
 }
+
+func NewManager(apiClient *client.APIClient) *Manager {
+	return &Manager{
+		client: apiClient,
+	}
+}
