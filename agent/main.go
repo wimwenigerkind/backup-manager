@@ -12,6 +12,7 @@ func main() {
 	cfg := config.LoadConfig()
 	printStart(cfg)
 	apiClient := client.NewAPIClient(cfg.ServerURL, cfg.AgentID)
+	configManager := config.NewManager(apiClient)
 }
 
 func printStart(cfg *config.Config) {
