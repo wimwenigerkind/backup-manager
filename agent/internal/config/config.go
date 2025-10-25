@@ -26,14 +26,17 @@ func LoadConfig() *Config {
 
 	return &Config{
 		ServerURL:    getEnv("SERVER_URL", "http://localhost:8080"),
-		AgentID:      getEnv("AGENT_ID", ""),
+		AgentID:      getEnv("AGENT_ID", "", true),
 		PollInterval: time.Duration(getEnvInt("POLL_INTERVAL", 15)) * time.Second,
 	}
 }
 
-func getEnv(key, defaultValue string) string {
+func getEnv(key, defaultValue string, required ...bool) string {
 	if value := os.Getenv(key); value != "" {
 		return value
+	}
+	if len(required) > 0 && required[0] {
+		log.Fatalf("Environment variable %s is required but not set", key)
 	}
 	return defaultValue
 }
