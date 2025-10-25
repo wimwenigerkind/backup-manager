@@ -2,11 +2,21 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/wimwenigerkind/backup-manager/agent/internal/config"
 )
 
 func main() {
-	fmt.Println("Starting Agent...")
-	_ = config.LoadConfig()
+	cfg := config.LoadConfig()
+	printStart(cfg)
+}
+
+func printStart(cfg *config.Config) {
+	log.Println("Starting Agent...")
+	fmt.Println()
+	log.Printf("Server URL: %s", cfg.ServerURL)
+	log.Printf("Agent ID: %s", cfg.AgentID)
+	log.Printf("Poll Interval: %v", cfg.PollInterval)
+	fmt.Println()
 }
