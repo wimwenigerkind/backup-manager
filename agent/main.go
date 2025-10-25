@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/wimwenigerkind/backup-manager/agent/internal/client"
 	"github.com/wimwenigerkind/backup-manager/agent/internal/config"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 	printStart(cfg)
+	apiClient := client.NewAPIClient(cfg.ServerURL, cfg.AgentID)
 }
 
 func printStart(cfg *config.Config) {
