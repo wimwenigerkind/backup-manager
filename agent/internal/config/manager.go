@@ -19,3 +19,9 @@ func NewManager(apiClient *client.APIClient) *Manager {
 		client: apiClient,
 	}
 }
+
+func (m *Manager) GetCurrentConfig() *models.AgentConfigResponse {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.currentConfig
+}
